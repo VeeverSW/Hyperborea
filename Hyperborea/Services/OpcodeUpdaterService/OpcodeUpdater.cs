@@ -22,7 +22,8 @@ public unsafe class OpcodeUpdater : IDisposable
         }
         else
         {
-            PluginLog.Information("New game version detected, opcode update required");
+            var v = CSFramework.Instance()->GameVersionString;
+            PluginLog.Information($"New game version detected, opcode update required: {v}");
             RunForCurrentVersion();
         }
     }
@@ -41,7 +42,7 @@ public unsafe class OpcodeUpdater : IDisposable
         using var client = new HttpClient();
         try
         {
-            var result = client.GetStringAsync($"https://github.com/kawaii/Hyperborea/raw/main/opcodes/{gameVersion}.txt").Result.ReplaceLineEndings().Split(Environment.NewLine);
+            var result = client.GetStringAsync($"https://github.com/VeeverSW/Hyperborea/raw/main/opcodes/{gameVersion}.txt").Result.ReplaceLineEndings().Split(Environment.NewLine);
             if (Disposed) throw new Exception("Opcode updater was disposed");
             foreach (var s in result)
             {

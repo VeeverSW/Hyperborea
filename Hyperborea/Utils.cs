@@ -110,7 +110,7 @@ public unsafe static class Utils
 
     public static string GetWeatherName(uint id)
     {
-        if (id == 0) return "Not defined";
+        if (id == 0) return "未定义";
         return Svc.Data.GetExcelSheet<Weather>().GetRowOrDefault((uint)id)?.Name.ToString() ?? $"#{id}";
     }
 

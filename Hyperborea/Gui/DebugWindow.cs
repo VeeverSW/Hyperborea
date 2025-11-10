@@ -16,7 +16,7 @@ using OpcodeUpdater = Hyperborea.Services.OpcodeUpdaterService.OpcodeUpdater;
 namespace Hyperborea.Gui;
 public unsafe class DebugWindow: Window
 {
-    public DebugWindow() : base("Hyperborea Debug Window")
+    public DebugWindow() : base("Hyperborea Debug 窗口")
     {
         EzConfigGui.WindowSystem.AddWindow(this);
     }
@@ -34,27 +34,27 @@ public unsafe class DebugWindow: Window
 
     void DrawOpcodes()
     {
-        ImGui.Checkbox("Disable opcode auto-update", ref C.ManualOpcodeManagement);
+        ImGui.Checkbox("禁用自动更新 opcode", ref C.ManualOpcodeManagement);
         ImGuiEx.HelpMarker($"When enabled, Hyperborea will not make any attempts to update opcodes and you will have to edit them manually every game update. You do not have to enable this checkbox in order to edit opcodes one time. ");
 
         ImGuiEx.TextWrapped($"""
-                Enter ZoneDown opcodes.
-                How to find: go to the Inn, type /xldata network, wait for a while without doing any actions. You should see two opcodes with Direction=ZoneDown that repeats with the same time interval. Input value from OpCode column.
+                输入 ZoneDown opcodes.
+                寻找方法: 前往旅馆, 输入 /xldata 找到Network Monitor, 什么都不要做等待一会儿. 看Direction那一列，你将会发现有两个ZoneDown 的 opcode，并且每隔一段时间重复一次，在右侧的OpCode那一列复制过来即可
                 """);
         EditOpcodes("##zoneDown", ref C.OpcodesZoneDown);
         ImGui.Separator();
-        ImGui.Checkbox("Disable ZoneUp Auto Detect", ref C.DisableZoneUpAutoDetect);
+        ImGui.Checkbox("禁用 ZoneUp 自动检测", ref C.DisableZoneUpAutoDetect);
         if(C.DisableZoneUpAutoDetect)
         {
             ImGui.Indent();
             ImGuiEx.TextWrapped($"""
-                Enter ZoneDown opcode.
-                How to find: go to the Inn, type /xldata network, wait for a while without doing any actions. You should see one opcode with Direction=ZoneUp that repeats with the same time interval. Input value from OpCode column.
+                输入 ZoneDown opcode.
+                寻找方法: 前往旅馆, 输入 /xldata 找到Network Monitor, 什么都不要做等待一会儿. 看Direction那一列，你将会发现有一个ZoneUp 的 opcode，并且每隔一段时间重复一次，在右侧的OpCode那一列复制过来即可
                 """);
             EditOpcodes("##zoneUp", ref C.OpcodesZoneUp);
             ImGui.Unindent();
         }
-        if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Check, "Apply"))
+        if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Check, "应用"))
         {
             OpcodeUpdater.Save();
         }
@@ -92,6 +92,8 @@ public unsafe class DebugWindow: Window
     int[] ints = new int[100];
     uint[] d = new uint[100];
     long[] longs = new long[100];
+    Dictionary<int, List<ushort>> cachedMapEffects = new();
+
     void DrawDebug()
     {
 
@@ -161,6 +163,97 @@ public unsafe class DebugWindow: Window
                     MapEffect.Delegate(Utils.GetMapEffectModule(), (uint)i, (ushort)i2, (ushort)i3);
                 }
             }
+
+            ImGui.Separator();
+            ImGuiEx.TextV("当前地图 MapEffect:");
+            if (ImGui.Button("读取当前地图所有 MapEffect"))
+            {
+                try
+                {
+                    cachedMapEffects = P.MapEffectDumper.DumpMapEffects();
+                    if (cachedMapEffects.Count > 0)
+                    {
+                        Notify.Success($"已读取 {cachedMapEffects.Count} 个 MapEffect Slot");
+                    }
+                    else
+                    {
+                        Notify.Warning("当前地图没有可用的 MapEffect 或签名扫描失败，请查看日志");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Notify.Error($"读取失败: {ex.Message}");
+                }
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("复制到剪贴板"))
+            {
+                if (cachedMapEffects.Count > 0)
+                {
+                    var lines = cachedMapEffects.Select(kvp =>
+                        $"{kvp.Key:X2}: {string.Join(", ", kvp.Value.Select(f => f.ToString("X4")))}");
+                    var text = string.Join("\n", lines);
+                    ImGui.SetClipboardText(text);
+                    Notify.Success("已复制到剪贴板");
+                }
+                else
+                {
+                    Notify.Warning("没有可用的 MapEffect 数据，请先点击读取按钮");
+                }
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("清空缓存"))
+            {
+                cachedMapEffects.Clear();
+                Notify.Info("已清空 MapEffect 缓存");
+            }
+
+            ImGui.BeginChild("MapEffectList", new Vector2(0, 300), true);
+
+            if (cachedMapEffects.Count == 0)
+            {
+                ImGuiEx.TextWrapped("暂无数据。点击上方按钮读取当前地图的 MapEffect");
+            }
+            else
+            {
+                foreach (var kvp in cachedMapEffects.OrderBy(x => x.Key))
+                {
+                    var index = kvp.Key;
+                    var flags = kvp.Value;
+                    var flagsDisplay = string.Join(", ", flags.Select(f => f.ToString("X4")));
+
+                    if (ImGui.TreeNode($"{index:X2}: {flagsDisplay}##mapeffect{index}"))
+                    {
+                        ImGui.Indent();
+
+                        ImGuiEx.Text($"共 {flags.Count} 个可用的 Flag");
+
+                        foreach (var flag in flags)
+                        {
+                            if (ImGui.Selectable($"Flag: {flag:X4}##mapeffectflag{index}_{flag}"))
+                            {
+                                i1 = index;
+                                i2 = flag;
+                                i3 = 0;
+                            }
+
+                            if (ImGui.IsItemHovered())
+                            {
+                                ImGui.BeginTooltip();
+                                ImGui.Text($"点击填入参数到上方输入框");
+                                ImGui.Text($"Index: {index} (0x{index:X2})");
+                                ImGui.Text($"Flag: {flag} (0x{flag:X4})");
+                                ImGui.EndTooltip();
+                            }
+                        }
+
+                        ImGui.Unindent();
+                        ImGui.TreePop();
+                    }
+                }
+            }
+
+            ImGui.EndChild();
         }
 
         if (ImGui.CollapsingHeader("Weather"))

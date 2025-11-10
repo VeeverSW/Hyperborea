@@ -15,7 +15,7 @@ public unsafe class CompassWindow : Window
     public Point3 PlayerPosition = new();
     string FestFilter = "";
 
-    public CompassWindow() : base("Hyperborea Compass", ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.AlwaysAutoResize)
+    public CompassWindow() : base("Hyperborea 指南针", ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.AlwaysAutoResize)
     {
         this.IsOpen = true;
         this.RespectCloseHotkey = false;
@@ -42,7 +42,7 @@ public unsafe class CompassWindow : Window
             var index = array.IndexOf(phase);
 
             ImGui.SetNextItemWidth(250f);
-            if(ImGui.BeginCombo("##selphase", $"{phase?.Name.NullWhenEmpty() ?? "Select phase"}"))
+            if(ImGui.BeginCombo("##selphase", $"{phase?.Name.NullWhenEmpty() ?? "选择阶段..."}"))
             {
                 foreach(var x in array)
                 {
@@ -93,26 +93,26 @@ public unsafe class CompassWindow : Window
             {
                 Player.GameObject->SetPosition(PlayerPosition.X, PlayerPosition.Y, PlayerPosition.Z);
             }
-            ImGuiEx.Tooltip("Teleport to the configured coordinates.");
+            ImGuiEx.Tooltip("传送至此坐标");
             ImGui.SameLine();
             if (ImGuiEx.IconButton("\uf030"))
             {
                 var cam = (CameraEx*)CameraManager.Instance()->GetActiveCamera();
                 Player.GameObject->SetPosition(cam->x, cam->y, cam->z);
             }
-            ImGuiEx.Tooltip("Teleport to the location of the camera.");
+            ImGuiEx.Tooltip("传送到当前相机位置");
             ImGui.SameLine();
             ImGui.PushFont(UiBuilder.IconFont);
             ImGuiEx.ButtonCheckbox("\uf05b", ref C.FastTeleport);
             ImGui.PopFont();
-            ImGuiEx.Tooltip("Enables CTRL + click to teleport to mouse cursor location."); 
+            ImGuiEx.Tooltip("启用 Ctrl + 左键点击 传送到鼠标位置"); 
 
             ImGui.SetNextItemWidth(200f);
-            if(ImGui.BeginCombo($"##mount", Utils.GetMountName(C.CurrentMount) ?? "Select a mount..."))
+            if(ImGui.BeginCombo($"##mount", Utils.GetMountName(C.CurrentMount) ?? "选择坐骑..."))
             {
                 ImGui.SetNextItemWidth(150f);
-                ImGui.InputTextWithHint("##search", "Filter", ref UI.MountFilter, 50);
-                if (ImGui.Selectable("No mount"))
+                ImGui.InputTextWithHint("##search", "搜索", ref UI.MountFilter, 50);
+                if (ImGui.Selectable("无坐骑"))
                 {
                     C.CurrentMount = 0;
                 }
@@ -137,18 +137,20 @@ public unsafe class CompassWindow : Window
             {
                 Player.Character->Mount.CreateAndSetupMount((short)(Svc.Condition[ConditionFlag.Mounted] ? 0 : C.CurrentMount), 0, 0, 0, 0, 0, 0);
             }
+            ImGuiEx.Tooltip("使用坐骑");
+
 
             ImGui.SameLine();
             ImGui.PushFont(UiBuilder.IconFont);
             ImGuiEx.ButtonCheckbox("\uf072", ref C.ForcedFlight);
             ImGui.PopFont();
-            ImGuiEx.Tooltip("Enable mount flight. (Also allows mount-like flight while unmounted). Incompatiable with noclip.");
+            ImGuiEx.Tooltip("启用坐骑飞行 (未骑乘时也可进行类似坐骑的飞行) 与 无碰撞模式 不兼容");
             if (C.ForcedFlight) P.Noclip = false;
             ImGui.SameLine();
             ImGui.PushFont(UiBuilder.IconFont);
             ImGuiEx.ButtonCheckbox("\uf6e2", ref P.Noclip);
             ImGui.PopFont();
-            ImGuiEx.Tooltip("Enables noclip. WASD - move, space - up, left shift - down.");
+            ImGuiEx.Tooltip("启用无碰撞模式 WASD - 移动, space - 向上移动, left shift - 向下移动");
             if (P.Noclip)
             {
                 ImGui.SameLine();
@@ -159,12 +161,12 @@ public unsafe class CompassWindow : Window
 
             ImGui.SetNextItemWidth(250f);
             var fests = P.SelectedFestivals.Select(x => P.FestivalDatas.FirstOrDefault(z => z.Id == x).Name).Join(", ");
-            if (ImGui.BeginCombo("##fest", fests.IsNullOrEmpty()? "Select festivals...":fests, ImGuiComboFlags.HeightLarge))
+            if (ImGui.BeginCombo("##fest", fests.IsNullOrEmpty()? "选择节日...":fests, ImGuiComboFlags.HeightLarge))
             {
                 ImGui.SetNextItemWidth(150f);
-                ImGui.InputTextWithHint($"##fltr1", "Search", ref FestFilter, 50);
+                ImGui.InputTextWithHint($"##fltr1", "搜索", ref FestFilter, 50);
                 ImGui.SameLine();
-                if(ImGui.Button("Deselect All"))
+                if(ImGui.Button("全不选"))
                 {
                     P.SelectedFestivals.Clear();
                     P.ApplyFestivals();
@@ -184,7 +186,7 @@ public unsafe class CompassWindow : Window
             var disabled2 = !EzThrottler.Check("ApplyFestival");
             if (disabled2) ImGui.BeginDisabled();
             ImGui.SameLine();
-            if (ImGui.Button("Apply"))
+            if (ImGui.Button("应用"))
             {
                 P.ApplyFestivals();
                 EzThrottler.Throttle("ApplyFestival", 2000, true);

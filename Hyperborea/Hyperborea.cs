@@ -48,6 +48,7 @@ public unsafe class Hyperborea : IDalamudPlugin
     public List<FestivalData> FestivalDatas;
     public List<int> SelectedFestivals = [];
     public bool AllowedOperation = false;
+    public MapEffectDumper MapEffectDumper;
 
     public Hyperborea(IDalamudPluginInterface pi)
     {
@@ -94,6 +95,7 @@ public unsafe class Hyperborea : IDalamudPlugin
                 }
             }
             SingletonServiceManager.Initialize(typeof(S));
+            MapEffectDumper = new();
         });
     }
 
