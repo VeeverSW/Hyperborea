@@ -1,10 +1,11 @@
 {
     "Author": "kawaii, Veever(汉化+额外功能)",
     "Name": "Hyperborea",
-    "InternalName": "Hyperborea",
+    "InternalName": "HyperboreaCN",
     "Description": "可在相对安全的环境下加载并探索任意区域，主要用于在无法进入/难以进入的场景中拍照",
     "Punchline": "要不我们在陌迪翁监狱里摆pose拍个照？",
     "RepoUrl": "https://github.com/VeeverSW/Hyperborea",
     "AcceptsFeedback": false,
-    "DalamudApiLevel": 13
+    "DalamudApiLevel": 13,
+    "IconUrl": "https://raw.githubusercontent.com/VeeverSW/DalamudPlugins/main/Plugins/Hyperborea/icon.png"
 }

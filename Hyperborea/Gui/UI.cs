@@ -52,7 +52,7 @@ public unsafe static class UI
             {
                 P.DebugWindow.IsOpen = true;
             }
-            ImGuiEx.Tooltip("请谨慎操作，错误的设置可能会导致账号面临严重风险");
+            ImGuiEx.Tooltip("长按 CTRL 并点击。请谨慎操作，错误的设置可能会导致账号面临严重风险");
             return;
         }
         var l = LayoutWorld.Instance()->ActiveLayout;
