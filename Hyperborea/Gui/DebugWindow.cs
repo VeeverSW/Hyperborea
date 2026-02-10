@@ -99,6 +99,9 @@ public unsafe class DebugWindow: Window
     {
         try
         {
+            var v = CSFramework.Instance()->GameVersionString;
+            ImGuiEx.TextCopy(v);
+
             var cs = DalamudReflector.GetService("Dalamud.Game.ClientState.ClientState");
             ImGuiEx.Text($"{cs.GetFoP("TerritoryType")}");
         }

@@ -21,10 +21,7 @@
         "contentHash": "X4m1PnFcJwvAj1sCDMntg/eZcX96CJLrWMiYnq41KqhFVZPuw63ZTSxIGqgdCwHWHvCAyTxheELC/VDf1HsU2A=="
       },
       "ecommons": {
-        "type": "Project",
-        "dependencies": {
-          "DalamudPackager": "[14.0.1, )"
-        }
+        "type": "Project"
       }
     }
   }
